@@ -1,0 +1,42 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - echo Installing backend dependencies...
+      - cd backend && npm install && cd ..
+      - echo Installing frontend dependencies...
+      - cd frontend && npm install && cd ..
+      - echo Installing dashboard dependencies...
+      - cd dashboard && npm install && cd ..
+  pre_build:
+    commands:
+      - echo Preparing environment variables...
+      - cd frontend
+      - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" > .env
+      - cd ../dashboard
+      - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" > .env
+      - cd ..
+  build:
+    commands:
+      - echo Building frontend...
+      - cd frontend && npm run build && cd ..
+      - echo Building dashboard...
+      - cd dashboard && npm run build && cd ..
+      - echo Moving builds to backend/public...
+      - mkdir -p backend/public/frontend
+      - mkdir -p backend/public/dashboard
+      - cp -r frontend/build/* backend/public/frontend
+      - cp -r dashboard/build/* backend/public/dashboard
+  post_build:
+    commands:
+      - echo Copying deployment files...
+      - cd backend
+      - cp ../appspec.yml .
+      - cp ../app_start.sh .   # ✅ copy script directly
+artifacts:
+  files:
+    - '**/*'
+  base-directory: backend
