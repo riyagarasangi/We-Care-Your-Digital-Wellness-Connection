@@ -1,1 +1,9 @@
-
+hooks:
+  ApplicationStop:
+    - location: backend/stop.sh
+      timeout: 60
+      runas: ec2-user
+  ApplicationStart:
+    - location: backend/app_start.sh
+      timeout: 300
+      runas: ec2-user
