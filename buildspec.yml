@@ -1,4 +1,3 @@
-
 version: 0.2
 
 phases:
@@ -6,15 +5,30 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo Installing dependencies for frontend...
-      - cd frontend
-      - npm install
+      - echo Installing dependencies...
+      - cd frontend && npm install && cd ..
+      - cd dashboard && npm install && cd ..
+      - cd backend && npm install && cd ..
+
   build:
     commands:
       - echo Building frontend...
-      - npm run build
+      - cd frontend && npm run build && cd ..
+      - echo Building dashboard...
+      - cd dashboard && npm run build && cd ..
+      - echo Backend ready...
+
+  post_build:
+    commands:
+      - echo Packaging artifacts...
+      - mkdir -p build-artifacts
+      - if [ -d frontend/build ]; then cp -r frontend/build build-artifacts/frontend; fi
+      - if [ -d frontend/dist ]; then cp -r frontend/dist build-artifacts/frontend; fi
+      - if [ -d dashboard/build ]; then cp -r dashboard/build build-artifacts/dashboard; fi
+      - if [ -d dashboard/dist ]; then cp -r dashboard/dist build-artifacts/dashboard; fi
+      - cp -r backend build-artifacts/backend
+      - zip -r app-package.zip build-artifacts
 
 artifacts:
   files:
-    - '**/*'
-  base-directory: frontend/build
+    - app-package.zip
