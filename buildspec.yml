@@ -1,102 +1,44 @@
 version: 0.2
 
-env:
-  secrets-manager:
-    ENV_SECRET: "we-care/backend/env"  # Name of the secret in Secrets Manager
-
 phases:
   install:
     runtime-versions:
-      nodejs: 16
+      nodejs: 14
     commands:
-      - echo Installing backend dependencies...
-      - cd backend && npm install && cd ..
-      - echo Installing frontend dependencies...
-      - cd frontend && npm install && cd ..
-      - echo Installing dashboard dependencies...
-      - cd dashboard && npm install && cd ..
-  pre_build:
-    commands:
-      - echo Preparing environment variables...
-
-      # Extract values from secret and write to backend .env
-      - echo "$ENV_SECRET" | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > backend/.env
-
-      # For React apps, expose base URL
+      - echo Installing dependencies…
+      # Install frontend deps
       - cd frontend
-      - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" > .env
-      - cd ../dashboard
-      - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" > .env
+      - npm install
       - cd ..
+      # Install backend deps (if needed)
+      - cd backend
+      - npm install
+      - cd ..
+
   build:
     commands:
-      - echo Building frontend...
-      - cd frontend && npm run build && cd ..
-      - echo Building dashboard...
-      - cd dashboard && npm run build && cd ..
-      - echo Moving builds to backend/public...
-      - mkdir -p backend/public/frontend
-      - mkdir -p backend/public/dashboard
-      - cp -r frontend/build/* backend/public/frontend
-      - cp -r dashboard/build/* backend/public/dashboard
-  post_build:
-    commands:
-      - echo Copying deployment files...
-      - cd backend
-      - cp ../appspec.yml .
-      - cp ../app_start.sh .
-artifacts:
-  files:
-    - '**/*'
-  base-directory: backend
-version: 0.2
-
-env:
-  secrets-manager:
-    ENV_SECRET: "we-care/backend/env"  # Name of the secret in Secrets Manager
-
-phases:
-  install:
-    runtime-versions:
-      nodejs: 16
-    commands:
-      - echo Installing backend dependencies...
-      - cd backend && npm install && cd ..
-      - echo Installing frontend dependencies...
-      - cd frontend && npm install && cd ..
-      - echo Installing dashboard dependencies...
-      - cd dashboard && npm install && cd ..
-  pre_build:
-    commands:
-      - echo Preparing environment variables...
-
-      # Extract values from secret and write to backend .env
-      - echo "$ENV_SECRET" | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > backend/.env
-
-      # For React apps, expose base URL
+      - echo Building frontend…
       - cd frontend
-      - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" > .env
-      - cd ../dashboard
-      - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" > .env
+      - npm run build
       - cd ..
-  build:
-    commands:
-      - echo Building frontend...
-      - cd frontend && npm run build && cd ..
-      - echo Building dashboard...
-      - cd dashboard && npm run build && cd ..
-      - echo Moving builds to backend/public...
+      # Ensure the target directory exists in backend
+      - echo Copying frontend build into backend…
       - mkdir -p backend/public/frontend
-      - mkdir -p backend/public/dashboard
-      - cp -r frontend/build/* backend/public/frontend
-      - cp -r dashboard/build/* backend/public/dashboard
+      - cp -r frontend/build/* backend/public/frontend/
+
   post_build:
     commands:
-      - echo Copying deployment files...
-      - cd backend
-      - cp ../appspec.yml .
-      - cp ../app_start.sh .
+      - echo Copying startup script…
+      # Assuming app_start.sh lives at the root of your repo
+      - cp app_start.sh backend/
+      - echo Build complete.
+
 artifacts:
   files:
-    - '**/*'
-  base-directory: backend
+    # Include everything under backend (which now contains both backend code + frontend build + startup script)
+    - backend/**/*
+
+cache:
+  paths:
+    - frontend/node_modules/**/*
+    - backend/node_modules/**/*
