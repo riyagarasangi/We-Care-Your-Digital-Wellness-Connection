@@ -5,24 +5,22 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo "Installing frontend dependencies…"
+      - echo "=== Installing frontend deps… ==="
       - cd frontend && npm install && cd ..
-      - echo "Installing backend dependencies…"
+      - echo "=== Installing backend deps… ==="
       - cd backend  && npm install && cd ..
 
   build:
     commands:
-      - echo "Building frontend…"
+      - echo "=== Building frontend… ==="
       - cd frontend && npm run build && cd ..
-      - echo "Copying build output into backend…"
+      - echo "=== Copying build into backend… ==="
       - mkdir -p backend/public/frontend
       - cp -r frontend/build/* backend/public/frontend/
 
   post_build:
     commands:
-      - echo "Copying startup script…"
-      - cp app_start.sh backend/   # adjust path if needed
-      - echo "Build and post_build complete!"
+      - echo "=== Post‑build complete: frontend is bundled in backend/ ==="
 
 artifacts:
   files:
