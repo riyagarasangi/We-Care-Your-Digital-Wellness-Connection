@@ -3,30 +3,26 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 14
+      nodejs: 18
     commands:
       - echo "Installing frontend dependencies…"
-      - cd frontend
-      - npm install
-      - cd ../backend
+      - cd frontend && npm install && cd ..
       - echo "Installing backend dependencies…"
-      - npm install
-      - cd ..
+      - cd backend  && npm install && cd ..
+
   build:
     commands:
       - echo "Building frontend…"
-      - cd frontend
-      - npm run build
-      - cd ..
-      - echo "Creating target folder and copying build output…"
+      - cd frontend && npm run build && cd ..
+      - echo "Copying build output into backend…"
       - mkdir -p backend/public/frontend
       - cp -r frontend/build/* backend/public/frontend/
+
   post_build:
     commands:
       - echo "Copying startup script…"
-      # If your startup script is at the repo root, this will succeed
-      - cp app_start.sh backend/
-      - echo "Build complete."
+      - cp app_start.sh backend/   # adjust path if needed
+      - echo "Build and post_build complete!"
 
 artifacts:
   files:
