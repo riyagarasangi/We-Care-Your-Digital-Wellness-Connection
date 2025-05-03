@@ -1,9 +1,7 @@
 #!/bin/bash
-
 echo "Stopping Node.js application..."
 
-# Kill process running on your app port, e.g., 3000 (update if needed)
-PORT=3000
+PORT=3000  # <-- update if your app runs on another port
 PID=$(lsof -t -i:$PORT)
 
 if [ -n "$PID" ]; then
